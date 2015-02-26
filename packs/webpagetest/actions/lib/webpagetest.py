@@ -2,12 +2,15 @@ import requests
 import random
 
 
-def list_locations(wpt_url):
+def list_locations(wpt_url, key=None):
     '''
     Takes a base URL and appends the locations path.
     Returns a list of location ids.
-   '''
-    locations_path = "/getLocations.php?f=json"
+    '''
+    if key:
+        locations_path = "/getLocations.php?f=json&k={0}".format(key)
+    else:
+        locations_path = "/getLocations.php?f=json"
     r = requests.get(wpt_url + locations_path)
     locations = r.json()['data']
 
@@ -18,43 +21,49 @@ def list_locations(wpt_url):
     return result
 
 
-def request_test(domain, location_id, wpt_url):
+def request_test(domain, location_id, wpt_url, key=None):
     '''
     Uses a domain and location id to request a test.
     Returns a dictionary with the response.
     '''
-
-    test_params = "/runtest.php?f=json&url={0}&location={1}".format(domain, location_id)
+    if key:
+        test_params = "/runtest.php?f=json&url={0}&location={1}&k={2}".format(domain, location_id, key)
+    else:
+        test_params = "/runtest.php?f=json&url={0}&location={1}".format(domain, location_id)
+    test_uri = wpt_url + test_params
     r = requests.get(wpt_url + test_params)
     return r.json()
 
 
-def get_test_results(test_id, wpt_url):
+def get_test_results(test_id, wpt_url, key=None):
     '''
     Returns a dictionary with the test results.
     '''
-    test_results = "/jsonResult.php?test={0}".format(test_id)
+    if key:
+        test_results = "/jsonResult.php?test={0}&k={1}".format(test_id, key)
+    else:
+        test_results = "/jsonResult.php?test={0}".format(test_id)
     r = requests.get(wpt_url + test_results)
     return r.json()
 
 
-def test_random_location(domain, wpt_url):
+def test_random_location(domain, wpt_url, key=None):
     '''
     Tests a domain at a random location.
     '''
     locations = list_locations(wpt_url)
-    test = request_test(domain, random.choice(locations), wpt_url)
-    return test['data']['userUrl']
+    test = request_test(domain, random.choice(locations), wpt_url, key)
+    try:
+        ret = test['data']['userUrl']
+    except KeyError as exc:
+        ret = ("Error: {0}".format(test))
+    return ret
 
 
 if __name__ == "__main__":
 
-    wpt_url = "http://webpagetest.rax.io"
+    wpt_url = "http://webpagetest.org"
     wpt_key = None
 
-    #locations = list_locations(wpt_url)
-    #test = request_test("www.onitato.com", random.choice(locations), wpt_url)
-    #test_results = get_test_results(test['data']['testId'], wpt_url)
-    #print("Your test can be found here: {0}".format(test['data']['userUrl']))
-
-    print(test_random_location("www.onitato.com", wpt_url))
+    test_url = test_random_location("www.onitato.com", wpt_url, wpt_key)
+    print("Your test results are here:\n{0}".format(test_url))
