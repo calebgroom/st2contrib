@@ -1,4 +1,5 @@
 import requests
+import json
 import random
 
 
@@ -27,10 +28,11 @@ def request_test(domain, location_id, wpt_url, key=None):
     Returns a dictionary with the response.
     '''
     if key:
-        test_params = "/runtest.php?f=json&url={0}&location={1}&k={2}".format(domain, location_id, key)
+        test_params = ("/runtest.php?f=json&url={0}"
+                       "&location={1}&k={2}").format(domain, location_id, key)
     else:
-        test_params = "/runtest.php?f=json&url={0}&location={1}".format(domain, location_id)
-    test_uri = wpt_url + test_params
+        test_params = ("/runtest.php?f=json"
+                       "&url={0}&location={1}").format(domain, location_id)
     r = requests.get(wpt_url + test_params)
     return r.json()
 
@@ -55,15 +57,33 @@ def test_random_location(domain, wpt_url, key=None):
     test = request_test(domain, random.choice(locations), wpt_url, key)
     try:
         ret = test['data']['userUrl']
-    except KeyError as exc:
+    except KeyError:
         ret = ("Error: {0}".format(test))
     return ret
 
 
+def send_message(url, username, icon_emoji, channel, text):
+    headers = {}
+    headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    body = {
+        'username': username,
+        'icon_emoji': icon_emoji,
+        'text': text,
+        'channel': channel,
+    }
+    data = 'payload=%s' % (json.dumps(body))
+    requests.post(url=url, headers=headers, data=data)
+
 if __name__ == "__main__":
 
     wpt_url = "http://webpagetest.org"
-    wpt_key = None
+    wpt_key = "yourkeyhere"
+    domain = "www.google.com"
+    slack_url = "yourhookhere"
+    slack_channel = "#channel"
+    slack_user = "youruser"
+    slack_icon = "usericon"
 
-    test_url = test_random_location("www.onitato.com", wpt_url, wpt_key)
-    print("Your test results are here:\n{0}".format(test_url))
+    test_url = test_random_location(domain, wpt_url, wpt_key)
+    message = "Your test results are here:\n{0}".format(test_url)
+    send_message(slack_url, slack_user, slack_icon, slack_channel, message)
