@@ -5,8 +5,8 @@ import random
 
 def list_locations(wpt_url, key=None):
     '''
-    Takes a base URL and appends the locations path.
-    Returns a list of location ids.
+    Receives the WebPageTest URL and API key.
+    Returns a list of available locations.
     '''
     if key:
         locations_path = "/getLocations.php?f=json&k={0}".format(key)
@@ -24,7 +24,8 @@ def list_locations(wpt_url, key=None):
 
 def request_test(domain, location_id, wpt_url, key=None):
     '''
-    Uses a domain and location id to request a test.
+    Tests the provided domain at the WebPageTest URL at the specified
+    location. Accepts key for the public WebPageTest instance.
     Returns a dictionary with the response.
     '''
     if key:
@@ -39,7 +40,7 @@ def request_test(domain, location_id, wpt_url, key=None):
 
 def get_test_results(test_id, wpt_url, key=None):
     '''
-    Returns a dictionary with the test results.
+    Returns a dictionary with the test results of the given Test ID.
     '''
     if key:
         test_results = "/jsonResult.php?test={0}&k={1}".format(test_id, key)
@@ -51,7 +52,8 @@ def get_test_results(test_id, wpt_url, key=None):
 
 def test_random_location(domain, wpt_url, key=None):
     '''
-    Tests a domain at a random location.
+    Tests a domain at a random location located on the WebPageTest instance
+    specified.
     '''
     locations = list_locations(wpt_url)
     test = request_test(domain, random.choice(locations), wpt_url, key)
@@ -63,6 +65,10 @@ def test_random_location(domain, wpt_url, key=None):
 
 
 def send_message(url, username, icon_emoji, channel, text):
+    '''
+    Send text to the Slack webhook provided. You must specify the username,
+    icon, and channel.
+    '''
     headers = {}
     headers['Content-Type'] = 'application/x-www-form-urlencoded'
     body = {
@@ -72,7 +78,12 @@ def send_message(url, username, icon_emoji, channel, text):
         'channel': channel,
     }
     data = 'payload=%s' % (json.dumps(body))
-    requests.post(url=url, headers=headers, data=data)
+    try:
+        requests.post(url=url, headers=headers, data=data)
+        return True
+    except:
+        print("Error posting message to Slack.")
+        return False
 
 if __name__ == "__main__":
 
