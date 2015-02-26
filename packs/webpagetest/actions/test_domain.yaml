@@ -1,0 +1,11 @@
+---
+name: "test_domain"
+runner_type: "run-python"
+description: "Test a domain on WebPageTest."
+enabled: true
+entry_point: "test_domain.py"
+parameters:
+  domain:
+    type: "string"
+    description: "Site to test."
+    required: true
