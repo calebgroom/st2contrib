@@ -40,6 +40,7 @@ class CheckmateBaseAction(Action):
             'name': deployment.get('name'),
             'id': deployment.get('id'),
             'created': deployment.get('created'),
+            'operation': deployment.get('operation'),
         }
         return ret
 
@@ -48,3 +49,8 @@ class CheckmateBaseAction(Action):
         response = self.checkmateclient.add_nodes(deployment_id, service,
                                                   count)
         return response.status_code == requests.codes.ok
+
+    def get_workflow(self, deployment_id, workflow_id):
+        """Return summary data set for a workflow."""
+        workflow = self.checkmateclient.get_workflow(workflow_id)
+        return workflow['attributes']
