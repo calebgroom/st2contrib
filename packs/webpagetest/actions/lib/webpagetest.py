@@ -10,13 +10,9 @@ def list_locations(wpt_url, key=None):
     params = {'f': 'json'}
     if key:
         params['k'] = key
-    r = requests.get("%s/getLocations.php" % wpt_url, params=params)
-    locations = r.json()['data']
-
-    result = []
-    for location, _ in sorted(locations.items()):
-        result.append(location)
-    return result
+    request = requests.get("%s/getLocations.php" % wpt_url, params=params)
+    locations = request.json()['data']
+    return sorted(locations.keys())
 
 
 def request_test(domain, location_id, wpt_url, key=None):
@@ -28,8 +24,8 @@ def request_test(domain, location_id, wpt_url, key=None):
     if key:
         params['k'] = key
 
-    r = requests.get("%s/runtest.php" % wpt_url, params=params)
-    return r.json()
+    request = requests.get("%s/runtest.php" % wpt_url, params=params)
+    return request.json()
 
 
 def get_test_results(test_id, wpt_url, key=None):
@@ -41,8 +37,8 @@ def get_test_results(test_id, wpt_url, key=None):
     if key:
         params['k'] = key
 
-    r = requests.get("%s/jsonResult.php" % wpt_url, params=params)
-    return r.json()
+    request = requests.get("%s/jsonResult.php" % wpt_url, params=params)
+    return request.json()
 
 
 def test_random_location(domain, wpt_url, key=None):
