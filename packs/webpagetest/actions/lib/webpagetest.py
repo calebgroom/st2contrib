@@ -1,100 +1,63 @@
-import requests
-import json
+"""WebPageTest actions."""
+
 import random
+
+import requests
 
 
 def list_locations(wpt_url, key=None):
-    '''
-    Receives the WebPageTest URL and API key.
-    Returns a list of available locations.
-    '''
+    """Return available locations."""
+    params = {'f': 'json'}
     if key:
-        locations_path = "/getLocations.php?f=json&k={0}".format(key)
-    else:
-        locations_path = "/getLocations.php?f=json"
-    r = requests.get(wpt_url + locations_path)
+        params['k'] = key
+    r = requests.get("%s/getLocations.php" % wpt_url, params=params)
     locations = r.json()['data']
 
     result = []
-    for location, values in sorted(locations.items()):
+    for location, _ in sorted(locations.items()):
         result.append(location)
-
     return result
 
 
 def request_test(domain, location_id, wpt_url, key=None):
-    '''
-    Tests the provided domain at the WebPageTest URL at the specified
-    location. Accepts key for the public WebPageTest instance.
-    Returns a dictionary with the response.
-    '''
+    """Execute a test for the given domain at a specific location.
+
+    Optional key is required for Google's public instance.
+    """
+    params = {'f': 'json', 'url': domain, 'location': location_id}
     if key:
-        test_params = ("/runtest.php?f=json&url={0}"
-                       "&location={1}&k={2}").format(domain, location_id, key)
-    else:
-        test_params = ("/runtest.php?f=json"
-                       "&url={0}&location={1}").format(domain, location_id)
-    r = requests.get(wpt_url + test_params)
+        params['k'] = key
+
+    r = requests.get("%s/runtest.php" % wpt_url, params=params)
     return r.json()
 
 
 def get_test_results(test_id, wpt_url, key=None):
-    '''
-    Returns a dictionary with the test results of the given Test ID.
-    '''
+    """Retrieve test results.
+
+    Optional key is required for Google's public instance.
+    """
+    params = {'test': test_id}
     if key:
-        test_results = "/jsonResult.php?test={0}&k={1}".format(test_id, key)
-    else:
-        test_results = "/jsonResult.php?test={0}".format(test_id)
-    r = requests.get(wpt_url + test_results)
+        params['k'] = key
+
+    r = requests.get("%s/jsonResult.php" % wpt_url, params=params)
     return r.json()
 
 
 def test_random_location(domain, wpt_url, key=None):
-    '''
-    Tests a domain at a random location located on the WebPageTest instance
-    specified.
-    '''
+    """Execute a test for the given domain at a random location.
+
+    Optional key is required for Google's public instance.
+    """
     locations = list_locations(wpt_url)
     test = request_test(domain, random.choice(locations), wpt_url, key)
     try:
-        ret = test['data']['userUrl']
+        return test['data']['userUrl']
     except KeyError:
-        ret = ("Error: {0}".format(test))
-    return ret
-
-
-def send_message(url, username, icon_emoji, channel, text):
-    '''
-    Send text to the Slack webhook provided. You must specify the username,
-    icon, and channel.
-    '''
-    headers = {}
-    headers['Content-Type'] = 'application/x-www-form-urlencoded'
-    body = {
-        'username': username,
-        'icon_emoji': icon_emoji,
-        'text': text,
-        'channel': channel,
-    }
-    data = 'payload=%s' % (json.dumps(body))
-    try:
-        requests.post(url=url, headers=headers, data=data)
-        return True
-    except:
-        print("Error posting message to Slack.")
-        return False
+        return "Error: %s" % test
 
 if __name__ == "__main__":
-
-    wpt_url = "http://webpagetest.org"
-    wpt_key = "yourkeyhere"
-    domain = "www.google.com"
-    slack_url = "yourhookhere"
-    slack_channel = "#channel"
-    slack_user = "youruser"
-    slack_icon = "usericon"
-
-    test_url = test_random_location(domain, wpt_url, wpt_key)
-    message = "Your test results are here:\n{0}".format(test_url)
-    send_message(slack_url, slack_user, slack_icon, slack_channel, message)
+    print "Test results: %s" % (
+        test_random_location("http://example.com", "http://webpagetest.org",
+                             "your-api-key-here"))
