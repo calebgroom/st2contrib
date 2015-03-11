@@ -10,7 +10,8 @@ def list_locations(wpt_url, key=None):
     params = {'f': 'json'}
     if key:
         params['k'] = key
-    request = requests.get("%s/getLocations.php" % wpt_url, params=params)
+    request = requests.get("{0}/getLocations.php".format(wpt_url),
+                           params=params)
     locations = request.json()['data']
     return sorted(locations.keys())
 
@@ -24,7 +25,7 @@ def request_test(domain, location_id, wpt_url, key=None):
     if key:
         params['k'] = key
 
-    request = requests.get("%s/runtest.php" % wpt_url, params=params)
+    request = requests.get("{0}/runtest.php".format(wpt_url), params=params)
     return request.json()
 
 
@@ -37,7 +38,7 @@ def get_test_results(test_id, wpt_url, key=None):
     if key:
         params['k'] = key
 
-    request = requests.get("%s/jsonResult.php" % wpt_url, params=params)
+    request = requests.get("{0}/jsonResult.php".format(wpt_url), params=params)
     return request.json()
 
 
@@ -51,9 +52,10 @@ def test_random_location(domain, wpt_url, key=None):
     try:
         return test['data']['userUrl']
     except KeyError:
-        return "Error: %s" % test
+        return "Error: {0}".format(test)
 
 if __name__ == "__main__":
-    print "Test results: %s" % (
-        test_random_location("http://example.com", "http://webpagetest.org",
+    print "Test results: {0}".format(
+        test_random_location("http://example.com",
+                             "http://webpagetest.org",
                              "your-api-key-here"))
