@@ -2,7 +2,3 @@
 wpt_url = "http://webpagetest.org"
 wpt_key = "yourkeyhere"
 domain = "www.google.com"
-slack_url = "yourhookhere"
-slack_channel = "#channel"
-slack_user = "youruser"
-slack_icon = "usericon"
